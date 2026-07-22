@@ -1,27 +1,3 @@
-// ============================================================
-//  Интерактивный консольный калькулятор на языке CLV
-//  Использует input_num() — чтение чисел с клавиатуры
-// ============================================================
 
-func divide(a, b) {
-    if (b == 0) {
-        print("Ошибка: деление на ноль!");
-        return 0;
-    }
-    return a / b;
-}
 
-print("=== Консольный калькулятор CLV ===");
-print("Введите первое число:");
-let a = input_num();
-
-print("Введите второе число:");
-let b = input_num();
-
-print("Сумма: " + to_str(a + b));
-print("Разность: " + to_str(a - b));
-print("Произведение: " + to_str(a * b));
-print("Частное: " + to_str(divide(a, b)));
-
-print("Нажмите Enter, чтобы выйти...");
-let dummy = input();
+func divide(a, b) { if (b == 0) { print("Error: division by zero!"); return 0; } return a / b; } print("=== CLV Console Calculator ==="); print("Enter the first number:"); let a = input_num(); print("Enter the second number:"); let b = input_num(); print("Sum: " + to_str(a + b)); print("Difference: " + to_str(a - b)); print("Product: " + to_str(a * b)); print("Quotient: " + to_str(divide(a, b))); print("Press Enter to exit..."); let dummy = input();
