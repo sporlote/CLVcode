@@ -1,0 +1,133 @@
+// ============================================
+//  Викторина по языку CLV
+//  12 вопросов, по 3 варианта ответа, 1 верный.
+//  Ошибка — игра начинается заново.
+// ============================================
+
+extern func clv_gui_init(title: str, w: int, h: int) -> int from "clvgui"
+extern func clv_gui_pump() -> int from "clvgui"
+extern func clv_gui_begin_frame() -> int from "clvgui"
+extern func clv_gui_end_frame() -> int from "clvgui"
+extern func clv_gui_shutdown() -> int from "clvgui"
+extern func clv_gui_statusbar(text: str) -> int from "clvgui"
+extern func clv_gui_toolbar_begin() -> int from "clvgui"
+extern func clv_gui_toolbar_end() -> int from "clvgui"
+extern func clv_gui_button(label: str) -> int from "clvgui"
+extern func clv_gui_icon_button(icon_id: int, label: str) -> int from "clvgui"
+extern func clv_gui_now_ms() -> int from "clvgui"
+
+// ---- Вопросы (текст) ----
+let q be [
+    "1) Как объявить переменную со значением 10?",
+    "2) Чем закрываются блоки if / while / func?",
+    "3) Сколько 'end' нужно у if/else целиком?",
+    "4) Что делает оператор '+' для двух строк?",
+    "5) Включает ли 'for i in 0 to 5' число 5?",
+    "6) Как вернуть значение из функции?",
+    "7) Что вернёт функция, если в ней нет return?",
+    "8) Как добавить элемент в конец массива?",
+    "9) Массивы в CLV передаются как...",
+    "10) Как подключить функцию из внешней C-библиотеки?",
+    "11) Какая функция превращает число в строку?",
+    "12) Как называется однострочный комментарий?"
+]
+
+// Варианты ответов — по 3 на вопрос
+let a be ["let x be 10", "end", "1", "Ошибка компиляции", "Да, включает", "yield x", "Ошибку компиляции", "push(arr, x)", "значение (копия)", "import func(...)", "num(x)", "# комментарий"]
+let b be ["var x = 10", "fi", "2", "Конкатенация строк", "Нет, не включает", "return x", "0 (ноль)", "arr.add(x)", "ссылку (общий массив)", "extern func f() -> int from \"lib\"", "str(x)", "// комментарий"]
+let c be ["x := 10", "}", "0", "Сравнение строк", "Зависит от типа", "give x", "пустую строку", "arr += x", "текст в формате JSON", "#include \"lib\"", "to_str(x)", "-- комментарий"]
+
+// Индекс правильного варианта: 0=A, 1=B, 2=C
+let correct be [0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+
+let total be 12
+let i be 0
+let streak be 0
+let best be 0
+
+// Фидбек-состояние: показываем ✅/❌ на экране feedback_ms миллисекунд,
+// пока клики по кнопкам игнорируются — так виден результат ответа.
+let feedback be ""
+let feedback_until be 0
+
+clv_gui_init("Викторина CLV — узнай язык!", 900, 220)
+
+while clv_gui_pump():
+    clv_gui_begin_frame()
+
+    let now be clv_gui_now_ms()
+
+    // ---- Прогресс-индикатор точками: ● пройдено, ◉ текущий, ○ впереди ----
+    let dots be ""
+    let d be 0
+    while d < total:
+        if d < i:
+            dots = dots + "● "
+        else:
+            if d == i:
+                dots = dots + "◉ "
+            else:
+                dots = dots + "○ "
+            end
+        end
+        d = d + 1
+    end
+
+    let header be dots + "   Серия: " + str(streak) + "   Лучшая: " + str(best)
+
+    if now < feedback_until:
+        clv_gui_statusbar(header + "   —   " + feedback)
+    else:
+        clv_gui_statusbar(header + "   —   " + q[i])
+    end
+
+    clv_gui_toolbar_begin()
+    let click_a be clv_gui_button("A)  " + a[i])
+    let click_b be clv_gui_button("B)  " + b[i])
+    let click_c be clv_gui_button("C)  " + c[i])
+    let click_restart be clv_gui_icon_button(3, "Начать сначала")
+    clv_gui_toolbar_end()
+
+    // Пока идёт показ фидбека — клики по ответам не принимаем
+    let accepting be now >= feedback_until
+
+    if click_restart:
+        i = 0
+        streak = 0
+        feedback = ""
+        feedback_until = 0
+    end
+
+    if accepting:
+        let chosen be -1
+        if click_a: chosen = 0 end
+        if click_b: chosen = 1 end
+        if click_c: chosen = 2 end
+
+        if chosen != -1:
+            if chosen == correct[i]:
+                streak = streak + 1
+                if streak > best:
+                    best = streak
+                end
+                feedback = "✅  Верно!"
+                feedback_until = now + 700
+                i = i + 1
+                if i >= total:
+                    i = 0
+                    feedback = "🏆  Все вопросы пройдены! Начинаем снова."
+                    feedback_until = now + 1400
+                end
+            else:
+                feedback = "❌  Неверно! Начинаем сначала."
+                feedback_until = now + 1200
+                streak = 0
+                i = 0
+            end
+        end
+    end
+
+    clv_gui_end_frame()
+end
+
+clv_gui_shutdown()
