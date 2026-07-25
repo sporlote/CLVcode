@@ -85,9 +85,15 @@ while clv_gui_pump():
 
     if accepting:
         let chosen be -1
-        if click_a: chosen = 0 end
-        if click_b: chosen = 1 end
-        if click_c: chosen = 2 end
+        if click_a:
+            chosen = 0
+        end
+        if click_b:
+            chosen = 1
+        end
+        if click_c:
+            chosen = 2
+        end
 
         if chosen != -1:
             if chosen == correct[i]:
